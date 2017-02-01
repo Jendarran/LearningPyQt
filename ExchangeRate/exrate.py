@@ -84,35 +84,35 @@ class Exchange(QtWidgets.QWidget):
 
     def get_rates(self):
         """Requests current exchange rate data from Fixer.io."""
-        first_pair = self.combo1.currentText()
-        second_pair = self.combo2.currentText()
+        first_currency = self.combo1.currentText()
+        second_currency = self.combo2.currentText()
 
-        data = requests.get('http://api.fixer.io/latest?base=' + first_pair)
-        rates_list = data.json()['rates']
-
-        if first_pair == second_pair:
+        if first_currency == second_currency:
             self.exrt1.setText('1')
             self.exrt2.setText('1')
         else:
+            data = requests.get('http://api.fixer.io/latest?base=' + first_currency)
+            rates_dict = data.json()['rates']
+
             self.exrt1.setText('1')
-            self.exrt2.setText(str(rates_list[second_pair]))
+            self.exrt2.setText(str(rates_dict[second_currency]))
 
         self.display_graph()
 
     def display_graph(self):
         """Requests past 30 day exchange rate data and displays on a graph."""
-        first_pair = self.combo1.currentText()
-        second_pair = self.combo2.currentText()
+        first_currency = self.combo1.currentText()
+        second_currency = self.combo2.currentText()
 
-        if first_pair != second_pair:
+        if first_currency != second_currency:
             graph_pairs = collections.OrderedDict()
             date = datetime.date.today()
 
             for i in range(30):  # You can change the date range here.
-                url = 'http://api.fixer.io/' + str(date) + '?base=' + first_pair
+                url = 'http://api.fixer.io/' + str(date) + '?base=' + first_currency
                 response = requests.get(url)
-                rates_list = response.json()['rates']
-                graph_pairs[date] = rates_list[second_pair]
+                rates_dict = response.json()['rates']
+                graph_pairs[date] = rates_dict[second_currency]
                 date -= datetime.timedelta(days=1)
 
             dates = []
@@ -121,7 +121,7 @@ class Exchange(QtWidgets.QWidget):
                 dates.append(d)
                 values.append(v)
 
-            self.graph.plot(dates, values, first_pair + '  vs  ' + second_pair)
+            self.graph.plot(dates, values, first_currency + '  vs  ' + second_currency)
 
 
 class PlotCanvas(FigureCanvas):
@@ -131,11 +131,11 @@ class PlotCanvas(FigureCanvas):
         """Initializes PlotCanvas with a single plot and allows it to adjust with window size."""
         self.f = Figure(figsize=(width, height), dpi=dpi)
         self.ax = self.f.add_subplot(111)
-        self.f.set_tight_layout(True)
 
         FigureCanvas.__init__(self, self.f)
         self.setParent(parent)
 
+        self.f.set_tight_layout(True)
         FigureCanvas.setSizePolicy(self,
                                    QtWidgets.QSizePolicy.Expanding,
                                    QtWidgets.QSizePolicy.Expanding)
