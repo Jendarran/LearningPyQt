@@ -91,7 +91,7 @@ class Exchange(QtWidgets.QWidget):
             self.exrt1.setText('1')
             self.exrt2.setText('1')
         else:
-            data = requests.get('http://api.fixer.io/latest?base=' + first_currency)
+            data = requests.get('http://api.fixer.io/latest?base={}'.format(first_currency))
             rates_dict = data.json()['rates']
 
             self.exrt1.setText('1')
@@ -109,7 +109,7 @@ class Exchange(QtWidgets.QWidget):
             date = datetime.date.today()
 
             for i in range(30):  # You can change the date range here.
-                url = 'http://api.fixer.io/' + str(date) + '?base=' + first_currency
+                url = 'http://api.fixer.io/{}?base={}'.format(str(date), first_currency)
                 response = requests.get(url)
                 rates_dict = response.json()['rates']
                 graph_pairs[date] = rates_dict[second_currency]
@@ -120,8 +120,9 @@ class Exchange(QtWidgets.QWidget):
             for d, v in graph_pairs.items():
                 dates.append(d)
                 values.append(v)
+            graph_title = '{} vs {}'.format(first_currency, second_currency)
 
-            self.graph.plot(dates, values, first_currency + '  vs  ' + second_currency)
+            self.graph.plot(dates, values, graph_title)
 
 
 class PlotCanvas(FigureCanvas):
